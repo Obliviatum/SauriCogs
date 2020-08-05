@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime as dt
 import discord
 
 from redbot.core import checks, commands, Config
@@ -74,26 +74,26 @@ class UserLog(commands.Cog):
             await ctx.send("Logging users leaving is now disabled.")
             
     async def set_invites(self, guild):
-		try:
-			invs = await self.bot.get_guild(guild.id).invites()
-			invs = dict([[inv.url, inv.uses] for inv in invs])
-			await self.config.guild(guild).invites.set(invs)
-		except discord.Forbidden:
-			pass
-		except discord.HTTPException:
-			pass
+        try:
+	    invs = await self.bot.get_guild(guild.id).invites()
+	    invs = dict([[inv.url, inv.uses] for inv in invs])
+	    await self.config.guild(guild).invites.set(invs)
+	except discord.Forbidden:
+	    pass
+	except discord.HTTPException:
+	    pass
 
-	async def joined_with(self, member):
-		try:
-			json_list = await self.config.guild(member.guild).invites()
-			inv_list = await self.bot.get_guild(member.guild.id).invites()
-			for invite in inv_list:
-				if invite.uses > json_list.get(invite.url, 0):
-					return invite
-		except discord.Forbidden:
-			pass
-		except discord.HTTPException:
-			pass
+    async def joined_with(self, member):
+        try:
+	    json_list = await self.config.guild(member.guild).invites()
+	    inv_list = await self.bot.get_guild(member.guild.id).invites()
+	    for invite in inv_list:
+		if invite.uses > json_list.get(invite.url, 0):
+		    return invite
+	except discord.Forbidden:
+	    pass
+	except discord.HTTPException:
+	    pass
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
@@ -103,7 +103,7 @@ class UserLog(commands.Cog):
         channel = member.guild.get_channel(await self.config.guild(member.guild).channel())
         if not channel:
             return
-        time = datetime.datetime.utcnow()
+        time = dt.utcnow()
         users = len(member.guild.members)
         since_created = (time - member.created_at).days
         user_created = member.created_at.strftime("%Y-%m-%d, %H:%M")
@@ -111,7 +111,7 @@ class UserLog(commands.Cog):
         created_on = f"{user_created} ({since_created} days ago)"
         
         invite = await self.joined_with(member)
-		joined_with = f"{invite.url} referred by {invite.inviter}\nused {invite.uses}/{invite.max_uses}"
+	joined_with = f"{invite.url} referred by {invite.inviter}\nused {invite.uses}/{invite.max_uses}"
 
         embed = discord.Embed(
             description=f"{member.mention} ({member.name}#{member.discriminator})",
@@ -123,7 +123,7 @@ class UserLog(commands.Cog):
         embed.add_field(name="Joined with:", value=joined_with)
         embed.set_footer(text=f"User ID: {member.id}")
         embed.set_author(
-            name=f"{member.name} has joined the guild",
+            name=f"{member.name} has joined {member.guild.name}",
             url=member.avatar_url,
             icon_url=member.avatar_url,
         )
@@ -138,12 +138,12 @@ class UserLog(commands.Cog):
         channel = member.guild.get_channel(await self.config.guild(member.guild).channel())
         if not channel:
             return
-        time = datetime.datetime.utcnow()
+        time = dt.utcnow()
         users = len(member.guild.members)
         since_joined = (time - member.joined_at).days
-		user_joined = member.joined_at.strftime("%Y-%m-%d, %H:%M")
+	user_joined = member.joined_at.strftime("%Y-%m-%d, %H:%M")
 
-		joined_on = f"{user_joined} ({since_joined} days ago)"
+	joined_on = f"{user_joined} ({since_joined} days ago)"
 
         embed = discord.Embed(
             description=f"{member.mention} ({member.name}#{member.discriminator})",
@@ -154,7 +154,7 @@ class UserLog(commands.Cog):
         embed.add_field(name="Account joined on:", value=joined_on)
         embed.set_footer(text=f"User ID: {member.id}")
         embed.set_author(
-            name=f"{member.name} has left the guild",
+            name=f"{member.name} has left {member.guild.name}",
             url=member.avatar_url,
             icon_url=member.avatar_url,
         )
